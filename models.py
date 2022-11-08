@@ -8,4 +8,5 @@ class Address(Base):
     #fields in the table
     id = Column(Integer, primary_key=True)
     name = Column(String(256))
-    address = Column(String(256))
+    latitude = Column(String(256))
+    longitude = Column(String(256))
