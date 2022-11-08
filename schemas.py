@@ -4,4 +4,5 @@ from pydantic import BaseModel
 class Address(BaseModel):
     #fields
     name: str
-    address: str
+    latitude: str
+    longitude:str
