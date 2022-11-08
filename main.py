@@ -3,6 +3,11 @@ from database import Base, engine
 from sqlalchemy.orm import Session
 import models
 import schemas
+from geopy.geocoders import Nominatim
+
+# initialize Nominatim API
+geolocator = Nominatim(user_agent="geoapiProject")
+
 # Create the database
 Base.metadata.create_all(engine)
 # Initialize app and disabled access information
@@ -19,7 +24,7 @@ def create_addressbook(addressbook: schemas.Address):
     # create a new database session
     session = Session(bind=engine, expire_on_commit=False)
     # create an instance of  database model
-    addressbookdb = models.Address(address = addressbook.address, name= addressbook.name)
+    addressbookdb = models.Address(name = addressbook.name, latitude= addressbook.latitude, longitude= addressbook.longitude)
     # add it to the session and commit it
     session.add(addressbookdb)
     session.commit()
@@ -41,19 +46,22 @@ def read_addressbook(id: int):
     # check if addressbook item with given id exists. If not, raise exception and return 404 not found response
     if not addressbook:
         raise HTTPException(status_code=404, detail=f"addressbook item with id {id} not found")
+    location = geolocator.reverse(addressbook.latitude+","+addressbook.longitude)
 
-    return addressbook
+    address = location.raw['address']
+    return address
 
 @app.put("/addressbook/{id}")
-def update_addressbook(id: int, address: str, name:str):
+def update_addressbook(id: int, name: str, latitude:str, longitude:str):
     # create a new database session
     session = Session(bind=engine, expire_on_commit=False)
     # get the addressbook item with the given id
     addressbook = session.query(models.Address).get(id)
     # update addressbook item with the given address (if an item with the given id was found)
     if addressbook:
-        addressbook.addesss = address
-        addressbook.name= name
+        addressbook.name = name
+        addressbook.latitude= latitude
+        addressbook.longitude= longitude
         session.commit()
     # close the session
     session.close()
@@ -86,4 +94,8 @@ def read_addressbook_list():
     addressbook_list = session.query(models.Address).all()
     # close the session
     session.close()
-    return addressbook_list
+    for i in addressbook_list:
+        location = geolocator.reverse(i.latitude+","+i.longitude)
+        
+        address = location.raw['address']
+        return  addressbook_list, address
