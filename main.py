@@ -24,7 +24,12 @@ def create_addressbook(addressbook: schemas.Address):
     # create a new database session
     session = Session(bind=engine, expire_on_commit=False)
     # create an instance of  database model
-    addressbookdb = models.Address(name = addressbook.name, latitude= addressbook.latitude, longitude= addressbook.longitude)
+    location= geolocator.reverse(addressbook.latitude+","+addressbook.longitude)
+    address = location.raw['address']
+    print (address)
+    addressbookdb = models.Address(name = addressbook.name, latitude= addressbook.latitude, longitude= addressbook.longitude,country=address.get('country', ''),state=address.get('state', '') , ZipCode=address.get('postcode'))
+    
+    
     # add it to the session and commit it
     session.add(addressbookdb)
     session.commit()
@@ -56,12 +61,19 @@ def update_addressbook(id: int, name: str, latitude:str, longitude:str):
     # create a new database session
     session = Session(bind=engine, expire_on_commit=False)
     # get the addressbook item with the given id
+   
     addressbook = session.query(models.Address).get(id)
+    location= geolocator.reverse(addressbook.latitude+","+addressbook.longitude)
+    address = location.raw['address']
+    print (address)
     # update addressbook item with the given address (if an item with the given id was found)
     if addressbook:
         addressbook.name = name
         addressbook.latitude= latitude
         addressbook.longitude= longitude
+        addressbook.country=address.get('country', '')
+        addressbook.state=address.get('state', '')
+        addressbook.ZipCode=address.get('postcode')
         session.commit()
     # close the session
     session.close()
@@ -94,8 +106,7 @@ def read_addressbook_list():
     addressbook_list = session.query(models.Address).all()
     # close the session
     session.close()
-    for i in addressbook_list:
-        location = geolocator.reverse(i.latitude+","+i.longitude)
+
         
-        address = location.raw['address']
-        return  addressbook_list, address
+        
+    return  addressbook_list
