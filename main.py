@@ -4,7 +4,37 @@ from sqlalchemy.orm import Session
 import models
 import schemas
 from geopy.geocoders import Nominatim
+from math import cos, asin, sqrt
+values=" "
+def distance(lat1, lon1, lat2, lon2,d):
+    global values
+    p = 0.017453292519943295
+    hav = 0.5 - cos((lat2-lat1)*p)/2 + cos(lat1*p)*cos(lat2*p) * (1-cos((lon2-lon1)*p)) / 2  
+    actual_distance= 12742 * asin(sqrt(hav))
+    if actual_distance < d:
+        temp={"latitude":lat2, "longitude": lon2}
+        location= geolocator.reverse(str(temp['latitude'])+","+str(temp['longitude']))
+        address = location.raw['address']
+        city = address.get('city', '')
+        values= str(values) + ", "+ str(city)
+        print(values)
+    print(12742 * asin(sqrt(hav)))  
+    return 12742 * asin(sqrt(hav))
 
+
+def closest(data, v,d):
+    check=min(data, key=lambda p: distance(float(v['lat']), float(v['lon']) , float(p['lat']) , float(p['lon']),float(d)))
+    return check
+
+tempDataList = [{'lat': 28.6139, 'lon': 77.2090},  #delhi
+                {'lat': 18.5204,  'lon': 73.8567 }, #pune
+                {'lat': 12.9716, 'lon': 77.5946}, #bangalore
+                {'lat': 15.4909, 'lon': 73.8278}, # panjim goa
+                {'lat': 19.0760, 'lon': 72.8777}, #mumbai
+                {'lat': 28.4595, 'lon': 77.0266}, #gurugao
+                {'lat': 15.2832, 'lon': 73.9862},#margao goa
+                {'lat': 28.474388, 'lon': 77.50399}# noida
+                ]
 # initialize Nominatim API
 geolocator = Nominatim(user_agent="geoapiProject")
 
@@ -17,17 +47,19 @@ app = FastAPI()
 @app.get("/")
 def root():
     #asking to redirect
-    return " go to https://fastapigeolocator.herokuapp.com/docs"
+    return " go to http://127.0.0.1:8000/docs"
 
 @app.post("/addressbook", status_code=status.HTTP_201_CREATED)
 def create_addressbook(addressbook: schemas.Address):
     # create a new database session
     session = Session(bind=engine, expire_on_commit=False)
     # create an instance of  database model
-    location= geolocator.reverse(addressbook.latitude+","+addressbook.longitude)
-    address = location.raw['address']
-    print (address)
-    addressbookdb = models.Address(name = addressbook.name, latitude= addressbook.latitude, longitude= addressbook.longitude,country=address.get('country', ''),state=address.get('state', '') , ZipCode=address.get('postcode'))
+    #locationname = geolocator.geocode(addressbook.CityorState)
+    
+    d=addressbook.distance_upto
+    v = {'lat': addressbook.latitude, 'lon': addressbook.longitude}
+    close= closest(tempDataList, v,d)
+    addressbookdb = models.Address( latitude= addressbook.latitude, longitude= addressbook.longitude,distance_upto= addressbook.distance_upto , Nearbycities=values)
     
     
     # add it to the session and commit it
