@@ -47,7 +47,7 @@ app = FastAPI()
 @app.get("/")
 def root():
     #asking to redirect
-    return " go to http://127.0.0.1:8000/docs"
+    return " go to https://fastapigeolocator.herokuapp.com/docs"
 
 @app.post("/addressbook", status_code=status.HTTP_201_CREATED)
 def create_addressbook(addressbook: schemas.Address):
