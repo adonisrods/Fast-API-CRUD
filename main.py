@@ -47,10 +47,11 @@ app = FastAPI()
 @app.get("/")
 def root():
     #asking to redirect
-    return " go to https://fastapigeolocator.herokuapp.com/docs"
+    return " go to http://127.0.0.1:8000/docs"
 
 @app.post("/addressbook", status_code=status.HTTP_201_CREATED)
 def create_addressbook(addressbook: schemas.Address):
+
     # create a new database session
     session = Session(bind=engine, expire_on_commit=False)
     # create an instance of  database model
@@ -89,23 +90,21 @@ def read_addressbook(id: int):
     return address
 
 @app.put("/addressbook/{id}")
-def update_addressbook(id: int, name: str, latitude:str, longitude:str):
+def update_addressbook(id: int, latitude:str, longitude:str,distance_upto):
     # create a new database session
     session = Session(bind=engine, expire_on_commit=False)
     # get the addressbook item with the given id
    
     addressbook = session.query(models.Address).get(id)
-    location= geolocator.reverse(addressbook.latitude+","+addressbook.longitude)
-    address = location.raw['address']
-    print (address)
+    d=addressbook.distance_upto
+    v = {'lat':latitude, 'lon': longitude}
+    close= closest(tempDataList, v,d)
     # update addressbook item with the given address (if an item with the given id was found)
     if addressbook:
-        addressbook.name = name
         addressbook.latitude= latitude
         addressbook.longitude= longitude
-        addressbook.country=address.get('country', '')
-        addressbook.state=address.get('state', '')
-        addressbook.ZipCode=address.get('postcode')
+        addressbook.distance_upto=distance_upto
+        addressbook.Nearbycities=values
         session.commit()
     # close the session
     session.close()
