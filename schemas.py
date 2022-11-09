@@ -6,3 +6,6 @@ class Address(BaseModel):
     name: str
     latitude: str
     longitude:str
+    country: str
+    state: str
+    ZipCode:str
