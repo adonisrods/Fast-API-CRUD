@@ -3,9 +3,8 @@ from pydantic import BaseModel
 # Creating Address Schema (Pydantic Model)
 class Address(BaseModel):
     #fields
-    name: str
-    latitude: str
-    longitude:str
-    country: str
-    state: str
-    ZipCode:str
+    latitude : str
+    longitude : str
+   
+    distance_upto : str
+    Nearbycities: str
