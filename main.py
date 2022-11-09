@@ -11,7 +11,7 @@ geolocator = Nominatim(user_agent="geoapiProject")
 # Create the database
 Base.metadata.create_all(engine)
 # Initialize app and disabled access information
-app = FastAPI(swagger_ui_parameters={"syntaxHighlight.theme": "obsidian","syntaxHighlight": False})
+app = FastAPI()
 
 #the initial landing page for http://127.0.0.1:8000/
 @app.get("/")
