@@ -10,3 +10,6 @@ class Address(Base):
     name = Column(String(256))
     latitude = Column(String(256))
     longitude = Column(String(256))
+    country= Column(String(256))
+    state= Column(String(256))
+    ZipCode= Column(String(256))
